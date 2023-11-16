@@ -4,8 +4,7 @@ class DS
 	var size: imap<int, nat>
 	ghost var maxsize: nat
 	ghost var pathnew: seq<int>
-	ghost var prevpar1: imap<int, int>
-	ghost var prevpar2: imap<int, int>
+	ghost var prevpar: imap<int, int>
 	ghost var gx: int
 	ghost var gy: int
 
@@ -117,6 +116,7 @@ class DS
 		requires forall a :: ((a in size && parent[a] != a) ==> size[a] < size[parent[a]])
 		ensures parent.Keys == size.Keys
 		ensures parent.Values <= parent.Keys
+		ensures forall a :: a in size ==> size[a] > 0
 		ensures forall a :: ((a in size && parent[a] != a) ==> size[a] < size[parent[a]])
 		ensures old(size).Keys == size.Keys
 		ensures old(parent).Keys == parent.Keys
@@ -127,16 +127,23 @@ class DS
 		ensures (x in parent && y in parent) ==> forall a :: (a in parent ==> (old(parent)[a] == a <==> (parent[a] == a || a == gx || a == gy)))
 		ensures (x in parent && y in parent && gx == gy) ==> forall a :: (a in parent ==> (old(parent)[a] == a <==> parent[a] == a))
 		ensures (x in parent && y in parent && gx == gy) ==> forall a :: (a in size ==> old(size)[a] == size[a])
+		ensures (x in parent && y in parent && gx != gy) ==> prevpar.Keys == parent.Keys
 		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> (parent[gy] == gy && gy == parent[gx] != gx && size[gy] == old(size)[gx] + old(size)[gy])
 		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> forall a :: (a in size && a != gy ==> size[a] == old(size)[a])
+		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> prevpar[gx] == gx
+		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> parent[gx] == gy
+		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> forall a :: (a in prevpar && a != gx ==> prevpar[a] == parent[a])
 		ensures (x in parent && y in parent && gx != gy && size[gx] >= size[gy]) ==> (parent[gx] == gx && gx == parent[gy] != gy && size[gx] == old(size)[gx] + old(size)[gy])
 		ensures (x in parent && y in parent && gx != gy && size[gx] >= size[gy]) ==> forall a :: (a in size && a != gx ==> size[a] == old(size)[a])
+		ensures (x in parent && y in parent && gx != gy && size[gx] >= size[gy]) ==> prevpar[gy] == gy
+		ensures (x in parent && y in parent && gx != gy && size[gx] >= size[gy]) ==> parent[gy] == gx
+		ensures (x in parent && y in parent && gx != gy && size[gx] >= size[gy]) ==> forall a :: (a in prevpar && a != gy ==> prevpar[a] == parent[a])
 	{
 		if x in parent && y in parent
 		{
 			var x': int := Find(x);
 			var y': int := Find(y);
-			prevpar1 := parent;
+			prevpar := parent;
 			gx := x';
 			gy := y';
 
@@ -146,23 +153,11 @@ class DS
 				{
 					parent := parent[x' := y'];
 					size := size[y' := size[x'] + size[y']];
-
-					prevpar2 := parent;
-					assert prevpar1.Keys == prevpar2.Keys;
-					assert prevpar1[x'] == x';
-					assert prevpar2[x'] == y';
-					assert forall a :: (a in prevpar1 && a != x' ==> prevpar1[a] == prevpar2[a]);
 				}
 				else
 				{
 					parent := parent[y' := x'];
 					size := size[x' := size[x'] + size[y']];
-
-					prevpar2 := parent;
-					assert prevpar1.Keys == prevpar2.Keys;
-					assert prevpar1[y'] == y';
-					assert prevpar2[y'] == x';
-					assert forall a :: (a in prevpar1 && a != y' ==> prevpar1[a] == prevpar2[a]);
 				}
 			}
 
