@@ -125,8 +125,7 @@ class DS
 		ensures (x in parent && y in parent) ==> gx in size
 		ensures (x in parent && y in parent) ==> gy in size
 		ensures (x in parent && y in parent) ==> forall a :: (a in parent ==> (old(parent)[a] == a <==> (parent[a] == a || a == gx || a == gy)))
-		ensures (x in parent && y in parent && gx == gy) ==> forall a :: (a in parent ==> (old(parent)[a] == a <==> parent[a] == a))
-		ensures (x in parent && y in parent && gx == gy) ==> forall a :: (a in size ==> old(size)[a] == size[a])
+		ensures (x in parent && y in parent && gx == gy) ==> (prevpar == parent && old(size) == size)
 		ensures (x in parent && y in parent && gx != gy) ==> prevpar.Keys == parent.Keys
 		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> (parent[gy] == gy && gy == parent[gx] != gx && size[gy] == old(size)[gx] + old(size)[gy])
 		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> forall a :: (a in size && a != gy ==> size[a] == old(size)[a])
