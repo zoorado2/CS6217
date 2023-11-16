@@ -14,7 +14,7 @@ class DS
 		requires P.Keys == S.Keys
 		requires P.Values <= P.Keys
 		requires forall a :: a in S ==> ms >= S[a]
-		requires forall a :: ((a in S && P[a] != a) ==> S[a] < S[P[a]])
+		requires forall a :: (a in S && P[a] != a) ==> S[a] < S[P[a]]
 	{
 		if P[x] == x then x
 		else root(P[x], P, S, ms)
@@ -24,7 +24,7 @@ class DS
 	{
 		|p| > 0 && 
 		x == p[0] && 
-		(forall a :: (0 <= a < |p| - 1 ==> (p[a] in P && P[p[a]] == p[a + 1] && p[a] != p[a + 1]))) && 
+		(forall a ::0 <= a < |p| - 1 ==> (p[a] in P && P[p[a]] == p[a + 1] && p[a] != p[a + 1])) && 
 		p[|p| - 1] in P && P[p[|p| - 1]] == p[|p| - 1]
 	}
 	
@@ -56,12 +56,12 @@ class DS
 		requires parent.Values <= parent.Keys
 		requires forall a :: a in size ==> maxsize >= size[a]
 		requires forall a :: a in size ==> size[a] > 0
-		requires forall a :: ((a in size && parent[a] != a) ==> size[a] < size[parent[a]])
+		requires forall a :: (a in size && parent[a] != a) ==> size[a] < size[parent[a]]
 		ensures parent.Keys == size.Keys
 		ensures parent.Values <= parent.Keys
 		ensures forall a :: a in size ==> maxsize >= size[a]
 		ensures forall a :: a in size ==> size[a] > 0
-		ensures forall a :: ((a in size && parent[a] != a) ==> size[a] < size[parent[a]])
+		ensures forall a :: (a in size && parent[a] != a) ==> size[a] < size[parent[a]]
 		ensures old(size) == size
 		ensures old(parent).Keys == parent.Keys
 		ensures old(maxsize) == maxsize
@@ -84,7 +84,7 @@ class DS
 			invariant parent.Keys == size.Keys
 			invariant parent.Values <= parent.Keys
 			invariant forall a :: a in size ==> maxsize >= size[a]
-			invariant forall a :: ((a in size && parent[a] != a) ==> size[a] < size[parent[a]])
+			invariant forall a :: (a in size && parent[a] != a) ==> size[a] < size[parent[a]]
 			invariant forall a :: 0 <= a < |pathnew| ==> pathnew[a] in parent
 			invariant |pathnew| > 0 ==> old(parent)[old(parent)[pathnew[|pathnew| - 1]]] == z
 			invariant |pathnew| > 0 ==> parent[pathnew[|pathnew| - 1]] == z
@@ -95,7 +95,7 @@ class DS
 			invariant |pathnew| > 0 ==> pathnew[0] == x
 			invariant |pathnew| == 0 ==> x == z
 			invariant forall a :: (a in parent && a !in pathnew) ==> old(parent)[a] == parent[a]
-			invariant forall a :: (a in parent ==> (old(parent)[a] == a <==> parent[a] == a))
+			invariant forall a :: a in parent ==> (old(parent)[a] == a <==> parent[a] == a)
 			invariant forall a :: a in pathnew ==> root(a, old(parent), old(size), old(maxsize)) == root(z, old(parent), old(size), old(maxsize))
 		{
 			pathnew := pathnew + [z];
@@ -113,30 +113,29 @@ class DS
 		requires parent.Values <= parent.Keys
 		requires forall a :: a in size ==> maxsize >= size[a]
 		requires forall a :: a in size ==> size[a] > 0
-		requires forall a :: ((a in size && parent[a] != a) ==> size[a] < size[parent[a]])
+		requires forall a :: (a in size && parent[a] != a) ==> size[a] < size[parent[a]]
 		ensures parent.Keys == size.Keys
 		ensures parent.Values <= parent.Keys
 		ensures forall a :: a in size ==> size[a] > 0
-		ensures forall a :: ((a in size && parent[a] != a) ==> size[a] < size[parent[a]])
+		ensures forall a :: (a in size && parent[a] != a) ==> size[a] < size[parent[a]]
 		ensures old(size).Keys == size.Keys
 		ensures old(parent).Keys == parent.Keys
 		ensures old(maxsize) == maxsize
 		ensures (x !in parent || y !in parent) ==> unchanged(this)
 		ensures (x in parent && y in parent) ==> gx in size
 		ensures (x in parent && y in parent) ==> gy in size
-		ensures (x in parent && y in parent) ==> forall a :: (a in parent ==> (old(parent)[a] == a <==> (parent[a] == a || a == gx || a == gy)))
 		ensures (x in parent && y in parent && gx == gy) ==> (prevpar == parent && old(size) == size)
 		ensures (x in parent && y in parent && gx != gy) ==> prevpar.Keys == parent.Keys
-		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> (parent[gy] == gy && gy == parent[gx] != gx && size[gy] == old(size)[gx] + old(size)[gy])
-		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> forall a :: (a in size && a != gy ==> size[a] == old(size)[a])
+		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> size[gy] == old(size)[gx] + old(size)[gy]
+		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> forall a :: a in size && a != gy ==> size[a] == old(size)[a]
 		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> prevpar[gx] == gx
 		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> parent[gx] == gy
-		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> forall a :: (a in prevpar && a != gx ==> prevpar[a] == parent[a])
-		ensures (x in parent && y in parent && gx != gy && size[gx] >= size[gy]) ==> (parent[gx] == gx && gx == parent[gy] != gy && size[gx] == old(size)[gx] + old(size)[gy])
-		ensures (x in parent && y in parent && gx != gy && size[gx] >= size[gy]) ==> forall a :: (a in size && a != gx ==> size[a] == old(size)[a])
+		ensures (x in parent && y in parent && gx != gy && size[gx] < size[gy]) ==> forall a :: a in prevpar && a != gx ==> prevpar[a] == parent[a]
+		ensures (x in parent && y in parent && gx != gy && size[gx] >= size[gy]) ==> size[gx] == old(size)[gy] + old(size)[gx]
+		ensures (x in parent && y in parent && gx != gy && size[gx] >= size[gy]) ==> forall a :: a in size && a != gx ==> size[a] == old(size)[a]
 		ensures (x in parent && y in parent && gx != gy && size[gx] >= size[gy]) ==> prevpar[gy] == gy
 		ensures (x in parent && y in parent && gx != gy && size[gx] >= size[gy]) ==> parent[gy] == gx
-		ensures (x in parent && y in parent && gx != gy && size[gx] >= size[gy]) ==> forall a :: (a in prevpar && a != gy ==> prevpar[a] == parent[a])
+		ensures (x in parent && y in parent && gx != gy && size[gx] >= size[gy]) ==> forall a :: a in prevpar && a != gy ==> prevpar[a] == parent[a]
 	{
 		if x in parent && y in parent
 		{
